@@ -12,6 +12,19 @@
             return this.name||"websock";
         }
     });
+    RED.nodes.registerType('multiwebsock',{
+        category: 'network',
+        color: "rgb(215, 200, 160)",
+        defaults: {
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "white-globe.svg",
+        label: function() {
+            return this.name||"multiwebsock";
+        }
+    });
 </script>
 
 <script type="text/html" data-template-name="websock">
@@ -22,5 +35,16 @@
 </script>
 
 <script type="text/html" data-help-name="websock">
+    <p>A basic implementation of a websocket listener that is controlled by input message payloads eg. msg.payload.command = "connect|disconnect"  msg.payload.url = "ws://xxxxx"</p>
+</script>
+
+<script type="text/html" data-template-name="multiwebsock">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="multiwebsock">
     <p>A basic implementation of a websocket listener that is controlled by input message payloads eg. msg.payload.command = "connect|disconnect"  msg.payload.url = "ws://xxxxx"</p>
 </script>
