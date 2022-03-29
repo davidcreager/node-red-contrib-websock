@@ -130,16 +130,20 @@ module.exports = function(RED) {
 						}
 						node.send({topic: node.wssServers[url].topic, url: node.wssServers[url].url, payload: tdata});
 					};
+				node.wssServers[msg.url].onClose = function(url, ev) {
+						node.send({topic: node.wssServers[url].topic + "/close", url: node.wssServers[url].url, payload: ev});
+					};
 				node.status({fill: "blue", shape: "ring", text: "connecting to " + msg.url})
 				node.wssServers[msg.url].server.on("open", () => {
-					node.status({fill: "green", shape: "dot", text: "connected:" + node.sURL});
+					node.status({fill: "green", shape: "dot", text: "connected:" + this.url});
 				});
 				node.wssServers[msg.url].server.on("error", data => {
-					node.status({fill: "red", shape: "ring", text: "Error " + data});
+					node.status({fill: "red", shape: "ring", text: "error:" + this.url + " " + data});
 					
 				});
-				node.wssServers[msg.url].server.on("close", () => {
-					node.status({fill: "yellow", shape: "ring", text: "closed"});
+				node.wssServers[msg.url].server.on("close", (ev) => {
+					node.status({fill: "yellow", shape: "ring", text: "closed:"  + this.url + " " + ev.reason});
+					node.wssServers[msg.url].onClose(msg.url, ev);
 				});
 				node.wssServers[msg.url].server.on("message", data => {
 					node.wssServers[msg.url].onMessage(msg.url, data);
