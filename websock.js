@@ -108,7 +108,7 @@ module.exports = function(RED) {
 				}
 				if (node.wssServers[msg.url]) {
 					node.warn("[MultiWebSockNode][info] Server " + msg.url + " already connected will close and reconnect");
-					node.wssServers[msg.url].close((err) => {
+					node.wssServers[msg.url].server.close((err) => {
 						if (err) node.warn("[MultiWebSockNode][info] Error Closing Server " + msg.url + " " + JSON.stringify(err));
 						node.warn("[MultiWebSockNode][debug][connect]  Re Opening " + msg.url);
 						node.wssServers[msg.url] = new ws.WebSocket(msg.url);
