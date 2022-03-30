@@ -126,7 +126,7 @@ module.exports = function(RED) {
 							tdata = JSON.parse(data);
 						} catch (err) {
 							tdata = data + "";
-							node.warn(["mesg NOT parsed " + err,err, tdata,data,msg]);
+							node.warn(["mesg NOT parsed " + err, err, tdata, data,msg]);
 						}
 						node.send({topic: node.wssServers[url].topic, url: node.wssServers[url].url, payload: tdata});
 					};
@@ -135,14 +135,14 @@ module.exports = function(RED) {
 					};
 				node.status({fill: "blue", shape: "ring", text: "connecting to " + msg.url})
 				node.wssServers[msg.url].server.on("open", () => {
-					node.status({fill: "green", shape: "dot", text: "connected:" + this.url});
+					node.status({fill: "green", shape: "dot", text: "connected:" + msg.url});
 				});
 				node.wssServers[msg.url].server.on("error", data => {
-					node.status({fill: "red", shape: "ring", text: "error:" + this.url + " " + data});
+					node.status({fill: "red", shape: "ring", text: "error:" + msg.url + " " + data});
 					
 				});
 				node.wssServers[msg.url].server.on("close", (ev) => {
-					node.status({fill: "yellow", shape: "ring", text: "closed:"  + this.url + " " + ev.reason});
+					node.status({fill: "yellow", shape: "ring", text: "closed:"  + msg.url + " " + ev.reason});
 					node.wssServers[msg.url].onClose(msg.url, ev);
 				});
 				node.wssServers[msg.url].server.on("message", data => {
