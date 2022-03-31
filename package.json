@@ -3,7 +3,7 @@
   "version": "2.0.2",
   "dependencies": {
     "ws": "^8.5.0"
-  }
+  },
   "description": "",
     "node-red" : {
         "nodes": {
