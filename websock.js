@@ -66,9 +66,10 @@ module.exports = function(RED) {
 		node.on('close', ()=> {
 			node.warn("[MultiWebSockNode][info] Closing " + Object.values(node.wssServers).length + " Servers");
 			Object.keys(node.wssServers).forEach( (wss) => {
-				node.wssServers[wss].server.close();
-				node.wssServers[wss] = {};
-				})
+				if (node.wssServers[wss].server) {
+					node.wssServers[wss].server.close();
+				}
+			});
 		});
         node.on('input', (msg) => {
 			if (msg.payload == "connect" || msg.payload == "disconnect" || msg.payload == "clear" || msg.payload == "status") {
@@ -117,7 +118,6 @@ module.exports = function(RED) {
 				} else {
 					node.warn("[MultiWebSockNode][debug][connect]  Opening " + msg.url);
 				}
-				node.wssServers[msg.url] = {};
 				node.wssServers[msg.url].server = new ws.WebSocket(msg.url);
 				node.wssServers[msg.url].topic = msg.topic;
 				node.wssServers[msg.url].url = msg.url;
