@@ -65,7 +65,10 @@ module.exports = function(RED) {
         var node = this;
 		node.on('close', ()=> {
 			node.warn("[MultiWebSockNode][info] Closing " + Object.values(node.wssServers).length + " Servers");
-			Object.keys(node.wssServers).forEach( (wss) => node.wssServers[wss].server.close(() => node.wssServers[wss] = {}) );
+			Object.keys(node.wssServers).forEach( (wss) => {
+				node.wssServers[wss].server.close();
+				node.wssServers[wss] = {};
+				})
 		});
         node.on('input', (msg) => {
 			if (msg.payload == "connect" || msg.payload == "disconnect" || msg.payload == "clear" || msg.payload == "status") {
@@ -85,7 +88,8 @@ module.exports = function(RED) {
 					node.warn("[MultiWebSockNode][info][clear] Clearing " + Object.values(node.wssServers).length + " Servers");
 					Object.keys(node.wssServers).forEach( (wss) => {
 						node.warn("[MultiWebSockNode][info][clear] Closing " + node.wssServers[wss].url);
-						node.wssServers[wss].server.close(() => node.wssServers[wss] = {}) 
+						node.wssServers[wss].server.close();
+						node.wssServers[wss] = {}; 
 					});
 					node.status({fill: "yellow", shape: "ring", text: "Cleared " + msg.url})
 					return null;
@@ -108,16 +112,13 @@ module.exports = function(RED) {
 				}
 				if (node.wssServers[msg.url]) {
 					node.warn("[MultiWebSockNode][info] Server " + msg.url + " already connected will close and reconnect");
-					node.wssServers[msg.url].server.close((err) => {
-						if (err) node.warn("[MultiWebSockNode][info] Error Closing Server " + msg.url + " " + JSON.stringify(err));
-						node.warn("[MultiWebSockNode][debug][connect]  Re Opening " + msg.url);
-						node.wssServers[msg.url] = new ws.WebSocket(msg.url);
-					});
+					node.wssServers[msg.url].server.close();
+					node.warn("[MultiWebSockNode][debug][connect]  Re Opening " + msg.url);
 				} else {
-					node.wssServers[msg.url] = {};
 					node.warn("[MultiWebSockNode][debug][connect]  Opening " + msg.url);
-					node.wssServers[msg.url].server = new ws.WebSocket(msg.url);
 				}
+				node.wssServers[msg.url] = {};
+				node.wssServers[msg.url].server = new ws.WebSocket(msg.url);
 				node.wssServers[msg.url].topic = msg.topic;
 				node.wssServers[msg.url].url = msg.url;
 				node.wssServers[msg.url].onMessage = function(url, data) {
