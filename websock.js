@@ -6,7 +6,7 @@ module.exports = function(RED) {
 		this.wssServer = null;
         var node = this;
 		node.on('close', ()=> {
-			if (node.wssServer) node.wssServer.close();
+			if (node.wssServer) node.wssServer.close.close(3001, "Node-red closing");
 			node.warn("Closing server ");
 		});
         node.on('input', (msg) => {
@@ -18,7 +18,7 @@ module.exports = function(RED) {
 					return null;
 				} else if (msg.payload == "disconnect") {
 					if (node.wssServer) {
-						node.wssServer.close();
+						node.wssServer.close(3003, "User Disconnected Server");
 						node.status({fill: "blue", shape: "ring", text: "disconnecting "});
 					} else {
 						node.status({fill: "yellow", shape: "ring", text: "Disconnected "});
@@ -26,7 +26,7 @@ module.exports = function(RED) {
 					return null;
 				}
 				if ( (node.sURL) && (node.sURL != msg.url) ) {
-					node.wssServer.close();
+					node.wssServer.close(3005, "User Opened new server on socket");
 				}
 				node.sURL = msg.url;
 				node.wssServer = new ws.WebSocket(msg.url);
@@ -67,7 +67,7 @@ module.exports = function(RED) {
 			node.warn("[MultiWebSockNode][info] Closing " + Object.values(node.wssServers).length + " Servers");
 			Object.keys(node.wssServers).forEach( (wss) => {
 				if (node.wssServers[wss].server) {
-					node.wssServers[wss].server.close();
+					node.wssServers[wss].server.close(3001, "Node-red closing");
 				}
 			});
 		});
@@ -89,7 +89,7 @@ module.exports = function(RED) {
 					node.warn("[MultiWebSockNode][info][clear] Clearing " + Object.values(node.wssServers).length + " Servers");
 					Object.keys(node.wssServers).forEach( (wss) => {
 						node.warn("[MultiWebSockNode][info][clear] Closing " + node.wssServers[wss].url);
-						node.wssServers[wss].server.close();
+						node.wssServers[wss].server.close(3002, "User Cleared servers");
 						node.wssServers[wss] = {}; 
 					});
 					node.status({fill: "yellow", shape: "ring", text: "Cleared " + msg.url})
@@ -102,7 +102,7 @@ module.exports = function(RED) {
 					}
 					if (!node.wssServers[msg.url].server) {
 						node.warn("[MultiWebSockNode][debug][disconnect] Closing Server " + msg.url);
-						node.wssServers[msg.url].server.close();
+						node.wssServers[msg.url].server.close(3003, "User Disconnected Server");
 						node.status({fill: "blue", shape: "ring", text: "disconnecting "});
 					} else {
 						node.warn("[MultiWebSockNode][debug][disconnect]  Server already closed " + msg.url);
@@ -113,10 +113,11 @@ module.exports = function(RED) {
 				}
 				if (node.wssServers[msg.url]) {
 					node.warn("[MultiWebSockNode][info] Server " + msg.url + " already connected will close and reconnect");
-					node.wssServers[msg.url].server.close();
+					node.wssServers[msg.url].server.close(3004, "Re-opening Server");
 					node.warn("[MultiWebSockNode][debug][connect]  Re Opening " + msg.url);
 				} else {
 					node.warn("[MultiWebSockNode][debug][connect]  Opening " + msg.url);
+					node.wssServers[msg.url] = {};
 				}
 				node.wssServers[msg.url].server = new ws.WebSocket(msg.url);
 				node.wssServers[msg.url].topic = msg.topic;
@@ -132,6 +133,7 @@ module.exports = function(RED) {
 						node.send({topic: node.wssServers[url].topic, url: node.wssServers[url].url, payload: tdata});
 					};
 				node.wssServers[msg.url].onClose = function(url, ev) {
+						node.warn(["Close Event Received url=" + url, ev]);
 						node.send({topic: node.wssServers[url].topic + "/close", url: node.wssServers[url].url, payload: ev});
 					};
 				node.status({fill: "blue", shape: "ring", text: "connecting to " + msg.url})
